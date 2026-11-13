@@ -1,0 +1,114 @@
+<section class="page-hero">
+  <div class="wrap">
+    <p class="eyebrow">Contact</p>
+    <h1>Talk to Catalyx</h1>
+    <p class="lead">Partnerships, research collaboration, investment, or <span class="brand-mark">FRESH+<span class="tm">™</span></span> quotes: tell us a little about what you need.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap contact-grid">
+    <div>
+      <h2>Catalyx Technologies LLC</h2>
+      <p>DBA Fresh Plus International</p>
+      <!-- NAP PLACEHOLDERS. Do not publish these until Colin confirms them.
+           [CONFIRM ADDRESS] HighLevel profile shows 1605 Sansom Street, Philadelphia, PA 19103.
+           [CONFIRM PHONE] Public line. freshplusintl.com uses (610) 892-9405. HighLevel profile uses 267-606-8667.
+           [CONFIRM EMAIL] Example discussed in the draft: info@catalyxtechnologies.com. HighLevel shows colin.speer@catalyxtechnologies.com.
+           [CONFIRM hours, ET]
+      -->
+      <p class="nap-pending">Address, phone, and email will be published here after they are confirmed.</p>
+      <p><a href="{{BASE}}products/">FRESH+<span class="tm">™</span> models</a> · <a href="{{BASE}}water-research/">Water R&amp;D</a> · <a href="{{BASE}}technology/">Technology</a></p>
+    </div>
+
+    <div id="hl-form-slot">
+      <!-- HIGHLEVEL FORM EMBED
+           Replace this entire div's contents with the HighLevel embed when it is ready.
+           Keep a separate SMS consent checkbox that is unchecked by default and not required.
+           The checkbox text must stay:
+           "I agree to receive text messages from Catalyx Technologies LLC about my inquiry, quotes, and scheduling at the phone number provided. Message frequency varies. Msg & data rates may apply. Reply STOP to opt out or HELP for help. Consent is not a condition of purchase. See our Privacy Policy and Terms of Service."
+           Do not add the optional marketing-text checkbox unless the A2P campaign use case is Mixed.
+           Field names used here, for mapping: first_name, last_name, email, phone, organization, interest, message, sms_consent.
+      -->
+      <form id="contact-form" method="post" action="#contact-form" onsubmit="return false">
+        <div class="row">
+          <div>
+            <label for="first-name">First name <abbr class="req" title="required">*</abbr></label>
+            <input id="first-name" name="first_name" type="text" autocomplete="given-name" required>
+          </div>
+          <div>
+            <label for="last-name">Last name <abbr class="req" title="required">*</abbr></label>
+            <input id="last-name" name="last_name" type="text" autocomplete="family-name" required>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="email">Email <abbr class="req" title="required">*</abbr></label>
+            <input id="email" name="email" type="email" autocomplete="email" required>
+          </div>
+          <div>
+            <label for="phone">Phone</label>
+            <input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" aria-describedby="phone-note">
+          </div>
+        </div>
+        <p class="field-hint" id="phone-note">Optional. Enter a number only if you want a call or if you check the text-message box.</p>
+        <label for="organization">Organization</label>
+        <input id="organization" name="organization" type="text" autocomplete="organization">
+        <label for="interest">I'm interested in <abbr class="req" title="required">*</abbr></label>
+        <select id="interest" name="interest" required>
+          <option value="" selected>Select one</option>
+          <option value="quote">FRESH+™ quote</option>
+          <option value="water">Water R&amp;D / research partnership</option>
+          <option value="investment">Investment</option>
+          <option value="pilot">Pilot site</option>
+          <option value="other">Other</option>
+        </select>
+        <label for="message">Message <abbr class="req" title="required">*</abbr></label>
+        <textarea id="message" name="message" required></textarea>
+        <div class="consent">
+          <input id="sms-consent" name="sms_consent" type="checkbox" value="yes">
+          <label for="sms-consent">I agree to receive text messages from Catalyx Technologies LLC about my inquiry, quotes, and scheduling at the phone number provided. Message frequency varies. Msg &amp; data rates may apply. Reply STOP to opt out or HELP for help. Consent is not a condition of purchase. See our <a href="{{BASE}}privacy-policy/">Privacy Policy</a> and <a href="{{BASE}}terms/">Terms of Service</a>.</label>
+        </div>
+        <!-- Marketing SMS checkbox omitted. Add a separate unchecked box only if the A2P use case is Mixed (Customer Care + Marketing). -->
+        <button class="btn btn-p" type="submit">Send message</button>
+        <p id="form-status" class="form-status" role="status" hidden></p>
+        <p class="fine">By submitting, you agree to our <a href="{{BASE}}privacy-policy/">Privacy Policy</a> and <a href="{{BASE}}terms/">Terms of Service</a>. Text-message consent is optional.</p>
+        <noscript>
+          <p class="fine">This form is not connected to a mailbox yet, so a message cannot be sent from the browser.</p>
+        </noscript>
+      </form>
+      <script>
+        (function () {
+          var form = document.getElementById("contact-form");
+          if (!form) return;
+          var params = new URLSearchParams(window.location.search);
+          var allowedInterest = { quote: 1, water: 1, investment: 1, pilot: 1, other: 1 };
+          var interest = params.get("interest");
+          var select = document.getElementById("interest");
+          if (select && interest && allowedInterest[interest]) select.value = interest;
+          var models = { "EC-30": 1, "EC-150": 1, "EC-300": 1, "EC-500": 1, "EC-1000": 1 };
+          var model = params.get("model");
+          var message = document.getElementById("message");
+          if (message && model && models[model] && !message.value) {
+            message.value = "I would like a quote for the FRESH+\u2122 " + model + ".";
+          }
+          var sms = document.getElementById("sms-consent");
+          var phone = document.getElementById("phone");
+          form.addEventListener("submit", function (event) {
+            event.preventDefault();
+            if (phone) phone.setCustomValidity("");
+            if (sms && phone && sms.checked && !phone.value.trim()) {
+              phone.setCustomValidity("Enter a mobile number to receive text messages, or leave the text-message box unchecked.");
+            }
+            if (!form.reportValidity()) return;
+            var status = document.getElementById("form-status");
+            if (status) {
+              status.hidden = false;
+              status.textContent = "Your message was not sent. This form is not connected to a mailbox yet.";
+            }
+          });
+        })();
+      </script>
+    </div>
+  </div>
+</section>
