@@ -314,8 +314,22 @@ def failures() -> list[str]:
                     problems.append(f"{rel}: missing #{parts.fragment} in {target}")
 
     robots = (DIST / "robots.txt").read_text(encoding="utf-8") if (DIST / "robots.txt").exists() else ""
-    if f"Sitemap: {ORIGIN}/sitemap.xml" not in robots or "Allow: /" not in robots:
+    ai_agents = [
+        "GPTBot",
+        "ChatGPT-User",
+        "OAI-SearchBot",
+        "ClaudeBot",
+        "Claude-User",
+        "Claude-SearchBot",
+        "Meta-ExternalAgent",
+        "PerplexityBot",
+        "*",
+    ]
+    if f"Sitemap: {ORIGIN}/sitemap.xml\n" not in robots or "Disallow:" in robots:
         problems.append("robots.txt")
+    for agent in ai_agents:
+        if f"User-agent: {agent}\nAllow: /\n" not in robots:
+            problems.append(f"robots.txt missing Allow for {agent}")
     sitemap = (DIST / "sitemap.xml").read_text(encoding="utf-8") if (DIST / "sitemap.xml").exists() else ""
     for info in EXPECTED.values():
         if info["canonical"] and f"<loc>{info['canonical']}</loc>" not in sitemap:

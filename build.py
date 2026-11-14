@@ -613,13 +613,27 @@ def write_sitemap() -> None:
     (DIST / "sitemap.xml").write_text(xml, encoding="utf-8")
 
 
+# Named AI crawlers get their own groups so an Allow is explicit even when a
+# crawler does not inherit User-agent: *. The wildcard group stays open too.
+AI_CRAWLERS = [
+    "GPTBot",
+    "ChatGPT-User",
+    "OAI-SearchBot",
+    "ClaudeBot",
+    "Claude-User",
+    "Claude-SearchBot",
+    "Meta-ExternalAgent",
+    "PerplexityBot",
+]
+
+
 def write_robots() -> None:
+    groups = [f"User-agent: {agent}\nAllow: /" for agent in [*AI_CRAWLERS, "*"]]
     text = (
         "# robots.txt for https://catalyxtechnologies.com\n"
-        "User-agent: *\n"
-        "Allow: /\n"
-        "\n"
-        f"Sitemap: {ORIGIN}/sitemap.xml\n"
+        + "\n\n".join(groups)
+        + "\n\n"
+        + f"Sitemap: {ORIGIN}/sitemap.xml\n"
     )
     (DIST / "robots.txt").write_text(text, encoding="utf-8")
 
