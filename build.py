@@ -20,6 +20,10 @@ DIST = ROOT / "dist"
 CONFIG = json.loads((ROOT / "site.config.json").read_text(encoding="utf-8"))
 
 ORIGIN = CONFIG["canonicalOrigin"].rstrip("/")
+ORG_ID = f"{ORIGIN}/#organization"
+SITE_ID = f"{ORIGIN}/#website"
+BRAND_ID = f"{ORIGIN}/#brand"
+BRAND_NAME = "FRESH+™"
 PREVIEW_NOINDEX = bool(CONFIG["previewNoindex"])
 GITHUB_BASE = CONFIG["githubPagesBase"]
 if not GITHUB_BASE.startswith("/"):
@@ -29,17 +33,17 @@ if not GITHUB_BASE.endswith("/"):
 
 WORDMARK_ALT = (
     "Catalyx Technologies logo. A blue molecular-network letter C sits beside the words "
-    "Catalyx technologies. The mark identifies the company behind FRESH+ photocatalytic "
+    "Catalyx technologies. The mark identifies the company behind FRESH+™ photocatalytic "
     "oxidation air systems and water-treatment research."
 )
 STACKED_ALT = (
     "Catalyx Technologies stacked logo. The blue molecular C wraps the word Catalyx, with "
-    "the word technologies set beside it. It is the company mark for FRESH+ air systems "
+    "the word technologies set beside it. It is the company mark for FRESH+™ air systems "
     "and photocatalytic oxidation research."
 )
 OG_ALT = (
     "Catalyx Technologies. Photocatalytic oxidation for air, and next, water. "
-    "FRESH+ air systems and water-treatment research."
+    "FRESH+™ air systems and water-treatment research."
 )
 
 KNOWS_ABOUT = [
@@ -124,6 +128,7 @@ PAGES = [
         "nav": "",
         "title": "Catalyx Technologies | Photocatalytic Oxidation (PCO) for Air and Water",
         "description": "Catalyx Technologies developed and commercialized PCO+UV air purification (FRESH+™) and is now applying photocatalytic oxidation to water treatment.",
+        "schemaType": "WebPage",
     },
     {
         "file": "technology.html",
@@ -132,6 +137,8 @@ PAGES = [
         "nav": "technology",
         "title": "Photocatalytic Oxidation (PCO+UV) Technology | Catalyx Technologies",
         "description": "Photocatalytic oxidation (PCO+UV) uses UV light on a photocatalyst to generate hydroxyl radicals. Catalyx Technologies commercialized the process in FRESH+™ air systems.",
+        "schemaType": "WebPage",
+        "crumb": "Technology",
     },
     {
         "file": "products.html",
@@ -140,6 +147,8 @@ PAGES = [
         "nav": "products",
         "title": "FRESH+™ PCO+UV Ethylene Scrubbers, EC-30 to EC-1000 | Catalyx Technologies",
         "description": "FRESH+™ PCO+UV systems for produce, floral, and cold-chain storage, from EC-30 to EC-1000. Made in the USA, 304 stainless steel, no ozone and no chemical pellets.",
+        "schemaType": "CollectionPage",
+        "crumb": "Products",
         "products": True,
     },
     {
@@ -149,6 +158,8 @@ PAGES = [
         "nav": "water",
         "title": "Photocatalytic Water Treatment R&D | Catalyx Technologies",
         "description": "Catalyx Technologies is researching photocatalytic oxidation for water treatment and intends to pursue SBIR Phase I funding. This is R&D, not a product, and no performance is claimed.",
+        "schemaType": "WebPage",
+        "crumb": "Water R&D",
     },
     {
         "file": "about.html",
@@ -157,6 +168,8 @@ PAGES = [
         "nav": "about",
         "title": "About Catalyx Technologies LLC | PCO Engineering",
         "description": "Catalyx Technologies LLC engineers photocatalytic oxidation systems. Through Fresh Plus International it sells FRESH+™ PCO+UV air systems for produce and cold-chain storage.",
+        "schemaType": "AboutPage",
+        "crumb": "About",
     },
     {
         "file": "contact.html",
@@ -165,6 +178,8 @@ PAGES = [
         "nav": "contact",
         "title": "Contact Catalyx Technologies",
         "description": "Contact Catalyx Technologies LLC about a FRESH+™ quote, a water-treatment research partnership, a pilot site, or an investment conversation.",
+        "schemaType": "ContactPage",
+        "crumb": "Contact",
     },
     {
         "file": "privacy.html",
@@ -173,6 +188,8 @@ PAGES = [
         "nav": "",
         "title": "Privacy Policy | Catalyx Technologies",
         "description": "Privacy Policy for Catalyx Technologies LLC. Mobile numbers and SMS opt-in data are never shared or sold to third parties.",
+        "schemaType": "WebPage",
+        "crumb": "Privacy Policy",
     },
     {
         "file": "terms.html",
@@ -181,6 +198,8 @@ PAGES = [
         "nav": "",
         "title": "Terms of Service | Catalyx Technologies",
         "description": "Terms of Service for catalyxtechnologies.com, including the Catalyx Technologies LLC text-message program: frequency, rates, STOP, and HELP.",
+        "schemaType": "WebPage",
+        "crumb": "Terms of Service",
     },
     {
         "file": "sitemap.html",
@@ -189,6 +208,8 @@ PAGES = [
         "nav": "",
         "title": "Sitemap | Catalyx Technologies",
         "description": "HTML sitemap of the Catalyx Technologies site: technology, FRESH+™ products, water research, about, contact, privacy, and terms.",
+        "schemaType": "CollectionPage",
+        "crumb": "Sitemap",
     },
 ]
 
@@ -245,13 +266,17 @@ def picture(base: str, stem: str, alt: str, width: int, height: int, loading: st
     )
 
 
+def node_ref(node_id: str) -> dict:
+    return {"@id": node_id}
+
+
 def product_description(item: dict) -> str:
     return (
-        f"FRESH+ {item['model']} is a PCO+UV air purification system for produce, floral, and cold-chain storage. "
+        f"{BRAND_NAME} {item['model']} is a PCO+UV air purification system for produce, floral, and cold-chain storage. "
         f"Airflow is {item['airflow']}. It uses {item['lamps']} UV-C lamps rated for 2 years with a shatterproof Teflon coating, "
         f"a MERV prefilter, and proprietary catalytic filters. Construction is {item['material']}. "
         f"Dimensions {item['dimensions']}. Weight {item['weight']}. "
-        f"Electrical supply is 120/220V single phase 50/60 Hz; draw is {item['electrical']}. "
+        f"Electrical supply is 120/220V single phase, 50/60 Hz; draw is {item['electrical']}. "
         f"Made in the USA. No ozone and no chemical pellets. {item['summary']}"
     )
 
@@ -304,14 +329,21 @@ def product_blocks(base: str) -> str:
 
 
 def json_ld(page: dict, logo_w: int, logo_h: int, og_name: str) -> str:
-    org_id = f"{ORIGIN}/#organization"
-    site_id = f"{ORIGIN}/#website"
+    """One @graph for every page.
+
+    Organization, Brand, and WebSite use stable @id values. Sitemap pages also
+    get a WebPage (or AboutPage, ContactPage, CollectionPage). Inner pages get
+    a BreadcrumbList. Email, telephone, and streetAddress are omitted: they are
+    not visible on the site. sameAs stays the Fresh Plus International URL that
+    Products and About already link to. og_name is unused.
+    """
+    del og_name
     org = {
         "@type": "Organization",
-        "@id": org_id,
+        "@id": ORG_ID,
         "name": "Catalyx Technologies",
         "legalName": "Catalyx Technologies LLC",
-        "alternateName": ["Fresh Plus International", "FRESH+"],
+        "alternateName": ["Fresh Plus International"],
         "url": f"{ORIGIN}/",
         "logo": {
             "@type": "ImageObject",
@@ -319,26 +351,79 @@ def json_ld(page: dict, logo_w: int, logo_h: int, og_name: str) -> str:
             "width": logo_w,
             "height": logo_h,
         },
-        "brand": {"@type": "Brand", "name": "FRESH+"},
+        "brand": node_ref(BRAND_ID),
         "sameAs": ["https://freshplusintl.com/"],
         "description": (
-            "Catalyx Technologies LLC is an engineering company focused on photocatalytic oxidation. "
-            "Through its Fresh Plus International division it designs and sells FRESH+ PCO+UV air systems, "
-            "and it is applying that chemistry to water-treatment research."
+            "Catalyx Technologies LLC, DBA Fresh Plus International, is an engineering company focused on photocatalytic oxidation. "
+            f"Through its Fresh Plus International division it designs and sells {BRAND_NAME} PCO+UV air purification systems "
+            "for produce and cold-chain storage, and it is applying that chemistry to water-treatment research."
         ),
         "knowsAbout": [
             {"@type": "Thing", "name": name, "sameAs": [wiki, wikidata]}
             for name, wiki, wikidata in KNOWS_ABOUT
         ],
     }
+    brand = {
+        "@type": "Brand",
+        "@id": BRAND_ID,
+        "name": BRAND_NAME,
+        "url": f"{ORIGIN}/products/",
+        "description": (
+            f"{BRAND_NAME} PCO+UV air purification systems for produce, floral, and cold-chain storage. "
+            "Sold and supported by Fresh Plus International, a DBA of Catalyx Technologies LLC."
+        ),
+    }
     website = {
         "@type": "WebSite",
-        "@id": site_id,
+        "@id": SITE_ID,
         "url": f"{ORIGIN}/",
         "name": "Catalyx Technologies",
-        "publisher": {"@id": org_id},
+        "publisher": node_ref(ORG_ID),
+        "inLanguage": "en",
     }
-    graph = [org, website]
+    graph: list[dict] = [org, brand, website]
+    schema_type = page.get("schemaType")
+    if schema_type:
+        page_url = ORIGIN + page["path"]
+        webpage: dict = {
+            "@type": schema_type,
+            "@id": f"{page_url}#webpage",
+            "url": page_url,
+            "name": page["title"],
+            "description": page["description"],
+            "isPartOf": node_ref(SITE_ID),
+            "about": node_ref(ORG_ID),
+            "publisher": node_ref(ORG_ID),
+            "inLanguage": "en",
+        }
+        crumb = page.get("crumb")
+        crumb_id = f"{page_url}#breadcrumb"
+        if crumb:
+            webpage["breadcrumb"] = node_ref(crumb_id)
+        if page.get("products"):
+            webpage["mainEntity"] = node_ref(f"{ORIGIN}/products/#models")
+        graph.append(webpage)
+        if crumb:
+            graph.append(
+                {
+                    "@type": "BreadcrumbList",
+                    "@id": crumb_id,
+                    "itemListElement": [
+                        {
+                            "@type": "ListItem",
+                            "position": 1,
+                            "name": "Home",
+                            "item": f"{ORIGIN}/",
+                        },
+                        {
+                            "@type": "ListItem",
+                            "position": 2,
+                            "name": crumb,
+                            "item": page_url,
+                        },
+                    ],
+                }
+            )
     if page.get("products"):
         elements = []
         for index, item in enumerate(PRODUCTS, start=1):
@@ -348,16 +433,12 @@ def json_ld(page: dict, logo_w: int, logo_h: int, og_name: str) -> str:
                     "position": index,
                     "item": {
                         "@type": "Product",
-                        "name": f"FRESH+ {item['model']}",
+                        "name": f"{BRAND_NAME} {item['model']}",
                         "model": item["model"],
                         "description": product_description(item),
                         "url": f"{ORIGIN}/products/#{item['slug']}",
-                        "brand": {"@type": "Brand", "name": "FRESH+"},
-                        "manufacturer": {
-                            "@type": "Organization",
-                            "name": "Catalyx Technologies LLC",
-                            "url": f"{ORIGIN}/",
-                        },
+                        "brand": node_ref(BRAND_ID),
+                        "manufacturer": node_ref(ORG_ID),
                         "material": item["material"],
                         "countryOfOrigin": "US",
                         "additionalProperty": [
@@ -366,7 +447,7 @@ def json_ld(page: dict, logo_w: int, logo_h: int, og_name: str) -> str:
                             {"@type": "PropertyValue", "name": "Dimensions", "value": item["dimensions"]},
                             {"@type": "PropertyValue", "name": "Weight", "value": item["weight"]},
                             {"@type": "PropertyValue", "name": "Electrical", "value": item["electrical"]},
-                            {"@type": "PropertyValue", "name": "Supply", "value": "120/220V single phase 50/60 Hz"},
+                            {"@type": "PropertyValue", "name": "Supply", "value": "120/220V single phase, 50/60 Hz"},
                         ],
                     },
                 }
@@ -374,14 +455,15 @@ def json_ld(page: dict, logo_w: int, logo_h: int, og_name: str) -> str:
         graph.append(
             {
                 "@type": "ItemList",
-                "name": "FRESH+ PCO+UV air purification systems",
+                "@id": f"{ORIGIN}/products/#models",
+                "name": f"{BRAND_NAME} PCO+UV air purification systems",
                 "numberOfItems": len(PRODUCTS),
                 "itemListElement": elements,
             }
         )
     payload = {"@context": "https://schema.org", "@graph": graph}
     raw = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
-    return raw.replace("<", "\\u003c")
+    return raw.replace("<", "\\u003c").replace("&", "\\u0026")
 
 
 def header(base: str, current: str, word_w: int, word_h: int) -> str:

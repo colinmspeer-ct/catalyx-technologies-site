@@ -9,6 +9,8 @@ from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urljoin, urlsplit
 
+from audit_jsonld import problems_for_dist
+
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist"
 CONFIG = json.loads((ROOT / "site.config.json").read_text(encoding="utf-8"))
@@ -246,8 +248,19 @@ def failures() -> list[str]:
                 problems.append(f"{rel}: json-ld {exc}")
                 data = {}
             types = [node.get("@type") for node in data.get("@graph", [])]
-            if "Organization" not in types or "WebSite" not in types:
+            if "Organization" not in types or "WebSite" not in types or "Brand" not in types:
                 problems.append(f"{rel}: schema types {types}")
+            if rel == "404.html":
+                if "BreadcrumbList" in types:
+                    problems.append("404.html: unexpected BreadcrumbList")
+            else:
+                page_types = {"WebPage", "AboutPage", "ContactPage", "CollectionPage"}
+                if not page_types.intersection(types):
+                    problems.append(f"{rel}: missing WebPage subtype in {types}")
+                if rel == "index.html" and "BreadcrumbList" in types:
+                    problems.append("index.html: homepage should not include BreadcrumbList")
+                if rel != "index.html" and "BreadcrumbList" not in types:
+                    problems.append(f"{rel}: missing BreadcrumbList")
             blob = parser.jsonld[0]
             if rel == "products/index.html" and '"@type":"Product"' not in blob:
                 problems.append("products: missing Product schema")
@@ -322,6 +335,7 @@ def failures() -> list[str]:
             problems.append(f"sitemap missing {info['canonical']}")
     if "<loc>" in sitemap and sitemap.count("<loc>") != 9:
         problems.append(f"sitemap url count {sitemap.count('<loc>')}")
+    problems.extend(problems_for_dist(DIST))
     return problems
 
 
